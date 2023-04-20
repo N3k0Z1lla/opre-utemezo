@@ -1,5 +1,8 @@
 import sys
 
+def debugprint(*a):
+    # print(*a)
+    pass
 
 class Command:
     def __init__(self, input):
@@ -8,6 +11,7 @@ class Command:
         self.priority = int(input[1])
         self.startTime = int(input[2])
         self.cpuBurst = int(input[3])
+        self.burstTime = self.cpuBurst
         self.waitTime = 0
 
     def __repr__(self):
@@ -22,77 +26,114 @@ current_tick = 1
 
 
 for line in sys.stdin.readlines():
-    commands.append(Command(line))
+    if line.strip():
+        commands.append(Command(line))
 
+commands.sort(key=lambda x: (x.startTime, x.name))
 
 original = commands.copy()
 deadTasks = []
-for c in commands:
-    if (c.priority == 0):
-        lows.append(c)
-    else:
-        highs.append(c)
-
-highs.sort(key=lambda x: (x.startTime, x.name))
 
 
-def finished(ls: list[Command]):
+def generate(ct: int):
+    toRemove = []
+    for c in commands:
+        if (runnalbe(c, ct)):
+            if (c.priority == 0):
+                lows.append(c)
+                toRemove.append(c)
+            else:
+                highs.append(c)
+                toRemove.append(c)
+    for c in toRemove:
+        commands.remove(c)
+
+
+def finished(ls: list[Command], ct: int):
     for c in ls:
-        if (c.cpuBurst <= 0):
-            ls.remove(c)
-            print("done:", c.name)
+        if (c.cpuBurst == 0):
+            c.waitTime = ct - c.burstTime - c.startTime - 1
+            debugprint("done:", c.name)
             deadTasks.append(c)
+            return c
 
 
 def runnalbe(c: Command, ct: int):
-    if (ct >= c.startTime):
+    if (ct > c.startTime):
         return True
 
 
-while (len(lows) != 0 or len(highs) != 0):
+srtf = None
+twoJump = False
+while (commands or lows or highs):
+    generate(current_tick)
+    debugprint(current_tick)
+    lows.sort(key=lambda x: (x.cpuBurst))
+    if srtf and lows[0].cpuBurst < srtf.cpuBurst:
+        lows.remove(srtf)
+        lows.append(srtf)
+    temp1 = None
+    for c in lows:
+        if (runnalbe(c, current_tick)):
+            temp1 = c
+            break
     if (len(highs) != 0 and runnalbe(highs[0], current_tick)):
         temp = highs[0]
         highs.pop(0)
+        if (srtf):
+            lows.append(lows.pop(0))
         if (temp.cpuBurst == 1):
             current_tick += 1
+            debugprint('r1')
             temp.cpuBurst -= 1
-            print("fut:", temp.name)
+            debugprint("fut:", temp.name, temp.cpuBurst)
             if (len(res) == 0):
                 res += temp.name
             if (res[-1] != temp.name):
                 res += temp.name
         else:
             current_tick += 2
-            print('r')
+            generate(current_tick)
+            debugprint('r2')
             temp.cpuBurst -= 2
-            print("fut:", temp.name)
+            twoJump = True
+            debugprint("fut:", temp.name, temp.cpuBurst)
             if (len(res) == 0):
                 res += temp.name
             if (res[-1] != temp.name):
                 res += temp.name
+        # if (highs and runnalbe(highs[0], current_tick)):
+        #     highs.append(temp)
+        # elif (temp.cpuBurst != 0):
+        #     highs.insert(0, temp)
         highs.append(temp)
-    elif (len(lows) != 0 and runnalbe(lows[0], current_tick)):
-        lows.sort(key=lambda x: (x.startTime, x.cpuBurst, x.name))
-        lows[0].cpuBurst -= 1
-        print("fut:", lows[0].name)
+        debugprint(highs)
+        srtf = None
+    elif (temp1 is not None):
+        debugprint(lows)
+        temp1.cpuBurst -= 1
+        debugprint("fut:", temp1.name, temp1.cpuBurst)
         if (len(res) == 0):
-            res += lows[0].name
-        if (res[-1] != lows[0].name):
-            res += lows[0].name
+            res += temp1.name
+        if (res[-1] != temp1.name):
+            res += temp1.name
         current_tick += 1
+        if temp1.cpuBurst != 0:
+            srtf = temp1
+        else:
+            srtf = None
     else:
         current_tick += 1
-    for c in lows:
-        if (runnalbe(c, current_tick - 1)):
-            print("wait:", c.name)
-            c.waitTime += 1
-    for c in highs:
-        if (runnalbe(c, current_tick - 1)):
-            c.waitTime += 1
-            print("wait:", c.name)
-    finished(lows)
-    finished(highs)
-    print(" ")
+
+    xd = finished(lows, current_tick)
+    if (xd in lows):
+        lows.remove(xd)
+
+    xd = finished(highs, current_tick)
+    if (xd in highs):
+        highs.remove(xd)
+    debugprint(" ")
+    twoJump = False
 print(res)
 
 for c in original:
