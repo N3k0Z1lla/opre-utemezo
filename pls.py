@@ -24,12 +24,15 @@ current_tick = 1
 for line in sys.stdin.readlines():
     commands.append(Parancs(line))
 '''
-commands.append(Command("A,0,0,5"))
-commands.append(Command("B,0,1,3"))
+commands.append(Command("A,1,2,7"))
+commands.append(Command("B,1,2,3"))
+'''
 commands.append(Command("C,1,1,1"))
 commands.append(Command("D,0,4,1"))
 commands.append(Command("E,1,3,2"))
-
+'''
+original = commands.copy()
+deadTasks = []
 for c in commands:
     if (c.priority == 0):
         lows.append(c)
@@ -43,15 +46,16 @@ def finished(ls: list[Command]):
     for c in ls:
         if (c.cpuBurst <= 0):
             ls.remove(c)
+            deadTasks.append(c)
 
 
-def runnalbe(c: Command):
-    if (current_tick >= c.startTime):
+def runnalbe(c: Command, ct: int):
+    if (ct >= c.startTime):
         return True
 
 
 while (len(lows) != 0 or len(highs) != 0):
-    if (len(highs) != 0 and runnalbe(highs[0])):
+    if (len(highs) != 0 and runnalbe(highs[0], current_tick)):
         temp = highs[0]
         highs.pop(0)
         if (temp.cpuBurst == 1):
@@ -69,18 +73,35 @@ while (len(lows) != 0 or len(highs) != 0):
             if (res[-1] != temp.name):
                 res += temp.name
         highs.append(temp)
-    elif (len(lows) != 0 and runnalbe(lows[0])):
+    elif (len(lows) != 0 and runnalbe(lows[0], current_tick)):
         lows.sort(key=lambda x: (x.startTime, x.cpuBurst, x.name))
         lows[0].cpuBurst -= 1
         if (len(res) == 0):
             res += lows[0].name
-
         if (res[-1] != lows[0].name):
             res += lows[0].name
         current_tick += 1
     else:
         current_tick += 1
+    for c in lows:
+        if (runnalbe(c, current_tick - 1)):
+            c.waitTime += 1
+    for c in highs:
+        if (runnalbe(c, current_tick - 1)):
+            c.waitTime += 1
     finished(lows)
     finished(highs)
 
 print(res)
+
+for c in original:
+    for d in deadTasks:
+        if (c.name == d.name):
+            c.waitTime = d.waitTime
+
+restime = ""
+for c in original:
+    restime += c.name + ":" + str(c.waitTime) + ","
+restime = restime[:-1]
+
+print(restime)
