@@ -18,47 +18,39 @@ commands = []
 lows = []
 highs = []
 res = ""
+current_tick = 1
+
 '''
 for line in sys.stdin.readlines():
     commands.append(Parancs(line))
+
 
 commands.append(Command("A,0,0,6"))
 commands.append(Command("B,0,1,5"))
 commands.append(Command("C,1,5,2"))
 commands.append(Command("D,1,10,1"))
-'''
+
 
 commands.append(Command("A,1,2,7"))
 commands.append(Command("B,1,2,3"))
+original = commands.copy()
+
+'''
+commands.append(Command("Q,0,5,8"))
+commands.append(Command("P,1,7,2"))
+for c in commands:
+    if (c.priority == 0):
+        lows.append(c)
+    else:
+        highs.append(c)
+
+highs.sort(key=lambda x: (x.startTime, x.name))
 
 
-
-def finished():
-    for c in commands:
-        if (c.cpuBurst == 0):
-            commands.remove(c)
-
-
-def get_best(noms: list[Command]):
-    best = noms[0]
-    for i in range(len(noms)):
-        if (noms[i] != best):
-            if (noms[i].priority > best.priority):
-                best = noms[i]
-            elif (noms[i].priority == best.priority):
-                if (noms[i].name < best.name):
-                    best = noms[i]
-    return best
-
-
-def regenerate():
-    lows.clear()
-    highs.clear()
-    for c in commands:
-        if (c.priority == 0):
-            lows.append(c)
-        else:
-            highs.append(c)
+def finished(ls: list[Command]):
+    for c in ls:
+        if (c.cpuBurst <= 0):
+            ls.remove(c)
 
 
 def runnalbe(c: Command):
@@ -66,30 +58,28 @@ def runnalbe(c: Command):
         return True
 
 
-def nominee_maker():
-    nominees = []
-    for l in lows:
-        if (runnalbe(l)):
-            nominees.append(l)
-    for h in highs:
-        if (runnalbe(h)):
-            nominees.append(h)
-    return nominees
-
-
-current_tick = 0
-while (len(commands) != 0):
-    regenerate()
-    nominees = nominee_maker()
-    if (len(nominees) != 0):
-        best = get_best(nominees)
-        for c in commands:
-            if (c.name == best.name):
-                commands.remove(c)
-        res += best.name
-        best.cpuBurst -= 1
-        commands.append(best)
-    finished()
-    current_tick += 1
+while (len(lows) != 0 or len(highs) != 0):
+    if (len(highs) != 0 and runnalbe(highs[0])):
+        temp = highs[0]
+        highs.pop(0)
+        if (temp.cpuBurst == 1):
+            current_tick += 1
+            temp.cpuBurst -= 1
+            res += temp.name
+        else:
+            current_tick += 2
+            temp.cpuBurst -= 2
+            res += temp.name
+            res += temp.name
+        highs.append(temp)
+    elif (len(lows) != 0 and runnalbe(lows[0])):
+        lows.sort(key=lambda x: (x.startTime, x.cpuBurst, x.name))
+        lows[0].cpuBurst -= 1
+        res += lows[0].name
+        current_tick += 1
+    else:
+        current_tick += 1
+    finished(lows)
+    finished(highs)
 
 print(res)
