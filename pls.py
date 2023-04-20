@@ -23,21 +23,13 @@ current_tick = 1
 '''
 for line in sys.stdin.readlines():
     commands.append(Parancs(line))
-
-
-commands.append(Command("A,0,0,6"))
-commands.append(Command("B,0,1,5"))
-commands.append(Command("C,1,5,2"))
-commands.append(Command("D,1,10,1"))
-
-
-commands.append(Command("A,1,2,7"))
-commands.append(Command("B,1,2,3"))
-original = commands.copy()
-
 '''
-commands.append(Command("Q,0,5,8"))
-commands.append(Command("P,1,7,2"))
+commands.append(Command("A,0,0,5"))
+commands.append(Command("B,0,1,3"))
+commands.append(Command("C,1,1,1"))
+commands.append(Command("D,0,4,1"))
+commands.append(Command("E,1,3,2"))
+
 for c in commands:
     if (c.priority == 0):
         lows.append(c)
@@ -65,17 +57,26 @@ while (len(lows) != 0 or len(highs) != 0):
         if (temp.cpuBurst == 1):
             current_tick += 1
             temp.cpuBurst -= 1
-            res += temp.name
+            if (len(res) == 0):
+                res += temp.name
+            if (res[-1] != temp.name):
+                res += temp.name
         else:
             current_tick += 2
             temp.cpuBurst -= 2
-            res += temp.name
-            res += temp.name
+            if (len(res) == 0):
+                res += temp.name
+            if (res[-1] != temp.name):
+                res += temp.name
         highs.append(temp)
     elif (len(lows) != 0 and runnalbe(lows[0])):
         lows.sort(key=lambda x: (x.startTime, x.cpuBurst, x.name))
         lows[0].cpuBurst -= 1
-        res += lows[0].name
+        if (len(res) == 0):
+            res += lows[0].name
+
+        if (res[-1] != lows[0].name):
+            res += lows[0].name
         current_tick += 1
     else:
         current_tick += 1
