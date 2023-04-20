@@ -1,4 +1,4 @@
-# import sys
+import sys
 
 
 class Command:
@@ -20,17 +20,11 @@ highs = []
 res = ""
 current_tick = 1
 
-'''
+
 for line in sys.stdin.readlines():
-    commands.append(Parancs(line))
-'''
-commands.append(Command("A,1,2,7"))
-commands.append(Command("B,1,2,3"))
-'''
-commands.append(Command("C,1,1,1"))
-commands.append(Command("D,0,4,1"))
-commands.append(Command("E,1,3,2"))
-'''
+    commands.append(Command(line))
+
+
 original = commands.copy()
 deadTasks = []
 for c in commands:
@@ -46,6 +40,7 @@ def finished(ls: list[Command]):
     for c in ls:
         if (c.cpuBurst <= 0):
             ls.remove(c)
+            print("done:", c.name)
             deadTasks.append(c)
 
 
@@ -61,13 +56,16 @@ while (len(lows) != 0 or len(highs) != 0):
         if (temp.cpuBurst == 1):
             current_tick += 1
             temp.cpuBurst -= 1
+            print("fut:", temp.name)
             if (len(res) == 0):
                 res += temp.name
             if (res[-1] != temp.name):
                 res += temp.name
         else:
             current_tick += 2
+            print('r')
             temp.cpuBurst -= 2
+            print("fut:", temp.name)
             if (len(res) == 0):
                 res += temp.name
             if (res[-1] != temp.name):
@@ -76,6 +74,7 @@ while (len(lows) != 0 or len(highs) != 0):
     elif (len(lows) != 0 and runnalbe(lows[0], current_tick)):
         lows.sort(key=lambda x: (x.startTime, x.cpuBurst, x.name))
         lows[0].cpuBurst -= 1
+        print("fut:", lows[0].name)
         if (len(res) == 0):
             res += lows[0].name
         if (res[-1] != lows[0].name):
@@ -85,13 +84,15 @@ while (len(lows) != 0 or len(highs) != 0):
         current_tick += 1
     for c in lows:
         if (runnalbe(c, current_tick - 1)):
+            print("wait:", c.name)
             c.waitTime += 1
     for c in highs:
         if (runnalbe(c, current_tick - 1)):
             c.waitTime += 1
+            print("wait:", c.name)
     finished(lows)
     finished(highs)
-
+    print(" ")
 print(res)
 
 for c in original:
@@ -102,6 +103,4 @@ for c in original:
 restime = ""
 for c in original:
     restime += c.name + ":" + str(c.waitTime) + ","
-restime = restime[:-1]
-
-print(restime)
+print(restime[:-1])
