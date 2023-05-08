@@ -18,9 +18,9 @@ Soronként egy (max. 10) taszk adatai. Egy sor felépítése (vesszővel elvála
 
 Példa:
 
-A,0,0,6
-B,0,1,5
-C,1,5,2
+A,0,0,6\
+B,0,1,5\
+C,1,5,2\
 D,1,10,1
 
 A bemenet végét EOF jelzi (előtte soremelés biztosan van, és üres sor is előfordulhat).
@@ -33,7 +33,7 @@ A második sorban a teljes várakozási idő taszkonként, érkezésük (nem fel
 
 Példa (a fenti bemenetre adott válasz):
 
-ACABDB
+ACABDB\
 A:2,B:8,C:0,D:0
 
 Értékelés
@@ -53,44 +53,44 @@ Tesztadatok
 
 Az első beküldés előtt érdemes az alábbi egyszerű tesztekkel megpróbálkozni.
 
-A,1,2,7
+A,1,2,7\
 B,1,2,3
 
-ABABA
+ABABA\
 A:3,B:4
 
-Q,0,5,8
+Q,0,5,8\
 P,1,7,2
 
-QPQ
+QPQ\
 Q:2,P:0
 
-A,0,0,5
-B,0,0,4
-C,0,1,3
+A,0,0,5\
+B,0,0,4\
+C,0,1,3\
 D,0,2,1
 
-BDBCA
+BDBCA\
 A:8,B:1,C:4,D:0
 
 
-A,0,0,3
-B,1,0,2
-C,0,3,3
+A,0,0,3\
+B,1,0,2\
+C,0,3,3\
 D,1,4,1
 
-BADAC
+BADAC\
 A:3,B:0,C:3,D:0
 
 Egy ráadás, kicsit fogósabb:
 
-A,0,0,5
-B,0,1,3
-C,1,1,1
-D,0,4,1
+A,0,0,5\
+B,0,1,3\
+C,1,1,1\
+D,0,4,1\
 E,1,3,2
 
-ACBEDBA
+ACBEDBA\
 A:7,B:4,C:0,E:0,D:1
 
 Végül egy vitatható eset:
